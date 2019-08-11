@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { DateTime } from "luxon";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
 
@@ -61,6 +62,9 @@ class Chat extends Component {
             key={message.id}
             message={message.message}
             name={message.from}
+            time={DateTime.fromMillis(message.time).toLocaleString(
+              DateTime.DATETIME_SHORT_WITH_SECONDS
+            )}
           />
         ))}
       </div>
