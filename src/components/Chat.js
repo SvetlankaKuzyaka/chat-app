@@ -1,70 +1,157 @@
-import React, { useState, useEffect } from "react";
+// import React, { useState, useEffect } from "react";
+import React, { Component } from "react";
 import { DateTime } from "luxon";
+import { createStore } from "redux";
+
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
+import messageReducer from "../redux/messageReducer";
 
 const URL = "ws://st-chat.shas.tel";
+const initialState = [];
+const store = createStore(messageReducer, initialState);
 
-const Chat = () => {
-  const [name, setName] = useState('Kuzya');
-  const [messageHistory, setMessageHistory] = useState([]);
-  const [ws, setWs] = useState(new WebSocket(URL)); 
+class Chat extends Component {
+  state = {
+    name: "Kuzya",
+    messages: []
+  };
 
-  useEffect(() => {
-    ws.onopen = () => {
+  ws = new WebSocket(URL);
+
+  componentDidMount() {
+    this.ws.onopen = () => {
       console.log("connected");
     };
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      setMessageHistory([...message, ...messageHistory]);   
+
+    this.ws.onmessage = evt => {
+      const message = JSON.parse(evt.data);
+      this.addMessage(message);
+      store.dispatch({
+        type: 'ADD_MESSAGE',
+        message,
+      });
+      console.log(store.getState());
     };
-    ws.onclose = () => {
+
+    this.ws.onclose = () => {
       console.log("disconnected");
-      setWs(new WebSocket(URL));
+      this.setState({
+        ws: new WebSocket(URL)
+      });
     };
-    return () => {
-      try {
-        ws.close();
-      } catch (error) {
-        console.log("error: ", error);
-      }
-    };
-  }, []);
-   
-  const submitMessage = (messageString) => {
-    const message = { from: name, message: messageString };
-    ws.send(JSON.stringify(message));
-    console.log(messageHistory);
   }
 
-  return (
-    <div>
-      <label htmlFor="name">
-        Name:&nbsp;
-        <input
-          type="text"
-          id={"name"}
-          placeholder={"Enter your name..."}
-          value={name}
-          onChange={event => setName(event.target.value)}
+  // componentWillUnmount() {
+  //   try {
+  //     this.ws.close();
+  //   } catch (error) {
+  //     console.log("error: ", error);
+  //   }
+  // }
+
+  addMessage = message =>
+    this.setState(state => ({ messages: [...message, ...state.messages] }));
+
+  submitMessage = messageString => {
+    const message = { from: this.state.name, message: messageString };
+    this.ws.send(JSON.stringify(message));
+  };
+
+  render() {
+    return (
+      <div>
+        <label htmlFor="name">
+          Name:&nbsp;
+          <input
+            type="text"
+            id={"name"}
+            placeholder={"Enter your name..."}
+            value={this.state.name}
+            onChange={e => this.setState({ name: e.target.value })}
+          />
+        </label>
+        <ChatInput
+          ws={this.ws}
+          onSubmitMessage={messageString => this.submitMessage(messageString)}
         />
-      </label>
-      <ChatInput
-        ws={ws}
-        onSubmitMessage={messageString => submitMessage(messageString)}
-      />
-      {messageHistory.map(message => (
-        <ChatMessage
-          key={message.id}
-          message={message.message}
-          name={message.from}
-          time={DateTime.fromMillis(message.time).toLocaleString(
-            DateTime.DATETIME_SHORT_WITH_SECONDS
-          )}
-        />
-      ))}
-    </div>
-  );
+        {this.state.messages.map(message => (
+          <ChatMessage
+            key={message.id}
+            message={message.message}
+            name={message.from}
+            time={DateTime.fromMillis(message.time).toLocaleString(
+              DateTime.DATETIME_SHORT_WITH_SECONDS
+            )}
+          />
+        ))}
+      </div>
+    );
+  }
 }
 
 export default Chat;
+
+// const Chat = () => {
+//   const [name, setName] = useState('Kuzya');
+//   const [messageHistory, setMessageHistory] = useState([]);
+//   const [ws, setWs] = useState(new WebSocket(URL)); 
+
+//   useEffect(() => {
+//     ws.onopen = () => {
+//       console.log("connected");
+//     };
+//     ws.onmessage = (event) => {
+//       const message = JSON.parse(event.data);
+//       setMessageHistory([...message, ...messageHistory]);   
+//     };
+//     ws.onclose = () => {
+//       console.log("disconnected");
+//       setWs(new WebSocket(URL));
+//     };
+//     return () => {
+//       try {
+//         ws.close();
+//       } catch (error) {
+//         console.log("error: ", error);
+//       }
+//     };
+//   }, []);
+   
+//   const submitMessage = (messageString) => {
+//     const message = { from: name, message: messageString };
+//     ws.send(JSON.stringify(message));
+//     console.log(messageHistory);
+//   }
+
+//   return (
+//     <div>
+//       <label htmlFor="name">
+//         Name:&nbsp;
+//         <input
+//           type="text"
+//           id={"name"}
+//           placeholder={"Enter your name..."}
+//           value={name}
+//           onChange={event => setName(event.target.value)}
+//         />
+//       </label>
+//       <ChatInput
+//         ws={ws}
+//         onSubmitMessage={messageString => submitMessage(messageString)}
+//       />
+//       {messageHistory.map(message => (
+//         <ChatMessage
+//           key={message.id}
+//           message={message.message}
+//           name={message.from}
+//           time={DateTime.fromMillis(message.time).toLocaleString(
+//             DateTime.DATETIME_SHORT_WITH_SECONDS
+//           )}
+//         />
+//       ))}
+//     </div>
+//   );
+// }
+
+// export default Chat;
