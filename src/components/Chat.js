@@ -1,75 +1,70 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
 
 const URL = "ws://st-chat.shas.tel";
 
-class Chat extends Component {
-  state = {
-    name: "Kuzya",
-    messages: []
-  };
+const Chat = () => {
+  const [name, setName] = useState('Kuzya');
+  const [messageHistory, setMessageHistory] = useState([]);
+  const [ws, setWs] = useState(new WebSocket(URL)); 
 
-  ws = new WebSocket(URL);
-
-  componentDidMount() {
-    this.ws.onopen = () => {
+  useEffect(() => {
+    ws.onopen = () => {
       console.log("connected");
     };
-
-    this.ws.onmessage = evt => {
-      const message = JSON.parse(evt.data);
-      console.log(message);
-      this.addMessage(message);
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setMessageHistory([...message, ...messageHistory]);   
     };
-
-    this.ws.onclose = () => {
+    ws.onclose = () => {
       console.log("disconnected");
-      this.setState({
-        ws: new WebSocket(URL)
-      });
+      setWs(new WebSocket(URL));
     };
+    return () => {
+      try {
+        ws.close();
+      } catch (error) {
+        console.log("error: ", error);
+      }
+    };
+  }, []);
+   
+  const submitMessage = (messageString) => {
+    const message = { from: name, message: messageString };
+    ws.send(JSON.stringify(message));
+    console.log(messageHistory);
   }
 
-  addMessage = message =>
-    this.setState(state => ({ messages: [...message, ...state.messages] }));
-
-  submitMessage = messageString => {
-    const message = { from: this.state.name, message: messageString };
-    this.ws.send(JSON.stringify(message));
-  };
-
-  render() {
-    return (
-      <div>
-        <label htmlFor="name">
-          Name:&nbsp;
-          <input
-            type="text"
-            id={"name"}
-            placeholder={"Enter your name..."}
-            value={this.state.name}
-            onChange={e => this.setState({ name: e.target.value })}
-          />
-        </label>
-        <ChatInput
-          ws={this.ws}
-          onSubmitMessage={messageString => this.submitMessage(messageString)}
+  return (
+    <div>
+      <label htmlFor="name">
+        Name:&nbsp;
+        <input
+          type="text"
+          id={"name"}
+          placeholder={"Enter your name..."}
+          value={name}
+          onChange={event => setName(event.target.value)}
         />
-        {this.state.messages.map(message => (
-          <ChatMessage
-            key={message.id}
-            message={message.message}
-            name={message.from}
-            time={DateTime.fromMillis(message.time).toLocaleString(
-              DateTime.DATETIME_SHORT_WITH_SECONDS
-            )}
-          />
-        ))}
-      </div>
-    );
-  }
+      </label>
+      <ChatInput
+        ws={ws}
+        onSubmitMessage={messageString => submitMessage(messageString)}
+      />
+      {messageHistory.map(message => (
+        <ChatMessage
+          key={message.id}
+          message={message.message}
+          name={message.from}
+          time={DateTime.fromMillis(message.time).toLocaleString(
+            DateTime.DATETIME_SHORT_WITH_SECONDS
+          )}
+        />
+      ))}
+    </div>
+  );
 }
 
 export default Chat;
