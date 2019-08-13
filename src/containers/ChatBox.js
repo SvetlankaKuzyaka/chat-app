@@ -1,17 +1,19 @@
 // import React, { useState, useEffect } from "react";
 import React, { Component } from "react";
 import { DateTime } from "luxon";
-import { createStore } from "redux";
+// import { createStore } from "redux";
+import { connect } from "react-redux";
 
-import ChatInput from "./ChatInput";
-import ChatMessage from "./ChatMessage";
-import messageReducer from "../redux/messageReducer";
+import ChatInput from "../components/ChatInput";
+import ChatMessage from "../components/ChatMessage";
+// import reducer from "../store/reducer";
+import { addMessageAction } from '../store/actions';
 
 const URL = "ws://st-chat.shas.tel";
-const initialState = [];
-const store = createStore(messageReducer, initialState);
+// const initialState = [];
+// const store = createStore(reducer, initialState);
 
-class Chat extends Component {
+class ChatBox extends Component {
   state = {
     name: "Kuzya",
     messages: []
@@ -26,19 +28,21 @@ class Chat extends Component {
 
     this.ws.onmessage = evt => {
       const message = JSON.parse(evt.data);
-      this.addMessage(message);
-      store.dispatch({
-        type: 'ADD_MESSAGE',
-        message,
-      });
-      console.log(store.getState());
+      // this.addMessage(message);
+      this.props.addMessage(message);
+
+      // store.dispatch({
+      //   type: 'ADD_MESSAGE',
+      //   message,
+      // });
+      // console.log(store.getState());
     };
 
     this.ws.onclose = () => {
       console.log("disconnected");
-      this.setState({
-        ws: new WebSocket(URL)
-      });
+      // this.setState({
+      //   ws: new WebSocket(URL)
+      // });
     };
   }
 
@@ -50,8 +54,8 @@ class Chat extends Component {
   //   }
   // }
 
-  addMessage = message =>
-    this.setState(state => ({ messages: [...message, ...state.messages] }));
+  // addMessage = message =>
+  //   this.setState(state => ({ messages: [...message, ...state.messages] }));
 
   submitMessage = messageString => {
     const message = { from: this.state.name, message: messageString };
@@ -75,7 +79,8 @@ class Chat extends Component {
           ws={this.ws}
           onSubmitMessage={messageString => this.submitMessage(messageString)}
         />
-        {this.state.messages.map(message => (
+        {/* {this.state.messages.map(message => ( */}
+        {this.props.messages.map(message => (
           <ChatMessage
             key={message.id}
             message={message.message}
@@ -90,7 +95,26 @@ class Chat extends Component {
   }
 }
 
-export default Chat;
+const mapStateToProps = ({ messages }) => {
+  return {
+    messages,
+  }
+}
+
+const mapsDispatchToProps = (dispatch) => {
+  return {
+    addMessage: (message) => {
+      dispatch(addMessageAction(message))
+    }
+  }
+}
+
+export default connect (
+  mapStateToProps,
+  mapsDispatchToProps
+)(ChatBox);
+
+// export default Chat;
 
 // const Chat = () => {
 //   const [name, setName] = useState('Kuzya');
