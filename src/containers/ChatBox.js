@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import { connect } from "react-redux";
 import PropTypes from 'prop-types';
+// import ReconnectingWebSocket from 'reconnecting-websocket';
+import ReconnectingWebSocket from '../utils/reconnecting-websocket';
 
 import ChatInput from "../components/ChatInput";
 import ChatMessage from "../components/ChatMessage";
@@ -11,29 +13,47 @@ const URL = "ws://st-chat.shas.tel";
 
 const ChatBox = ({messages, addMessage}) => {
   const [name, setName] = useState('Kuzya');
-  const [ws, setWs] = useState(new WebSocket(URL));
+  // const [ws, setWs] = useState(new WebSocket(URL));
+  const [ws] = useState(new ReconnectingWebSocket(URL));
 
   useEffect(() => {
     let isNotice = true;
     function addNotification() {
       function clickFunc() {
-        alert('Пользователь кликнул на уведомление');
         isNotice = true;
       }
       if (!("Notification" in window)) {
         alert("This browser does not support desktop notification");
       }
       else if (Notification.permission === "granted") {
-        const notification = new Notification("Hi there!");
-        isNotice = false;
-        notification.onclose = clickFunc;
+        if (document.hidden) {
+          const notification = new Notification(
+            "Бегом в чат! Есть непрочитанные сообщения!",
+            {
+              body: 'Чат ценителей JS',
+              icon: 'https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png',
+              requireInteraction: true
+            }
+          );
+          isNotice = false;
+          notification.onclose = clickFunc;
+        }
       }
       else if (Notification.permission !== 'denied') {
         Notification.requestPermission(function (permission) {
           if (permission === "granted") {
-            const notification = new Notification("Hi there!");
-            isNotice = false;
-            notification.onclose = clickFunc;
+            if (document.hidden) {
+              const notification = new Notification(
+                "Бегом в чат! Есть непрочитанные сообщения!",
+                {
+                  body: `Чат ценителей JS`,
+                  icon: 'https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png',
+                  requireInteraction: true
+                }
+              );
+              isNotice = false;
+              notification.onclose = clickFunc;
+            }
           }
         });
       }
@@ -49,15 +69,15 @@ const ChatBox = ({messages, addMessage}) => {
     };
     ws.onclose = () => {
       console.log("disconnected");
-      setWs(new WebSocket(URL));
+      // setWs(new WebSocket(URL));
     };
-    return () => {
-      try {
-        ws.close();
-      } catch (error) {
-        console.log("error: ", error);
-      }
-    };
+    // return () => {
+    //   try {
+    //     ws.close();
+    //   } catch (error) {
+    //     console.log("error: ", error);
+    //   }
+    // };
   }, [ws, addMessage]);
    
   const submitMessage = (messageString) => {
@@ -114,7 +134,7 @@ const Chat  = connect (
   mapsDispatchToProps
 )(ChatBox);
 
-Chat.propTypes = {
+ChatBox.propTypes = {
   messages: PropTypes.array.isRequired,
   addMessage: PropTypes.func.isRequired
 };
