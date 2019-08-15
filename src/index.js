@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
+import { BrowserRouter } from 'react-router-dom';
 
 import "./index.css";
 import App from "./App";
@@ -9,7 +10,7 @@ import * as serviceWorker from "./serviceWorker";
 import reducer from "./store/reducer";
 
 const initialState = {
-    name: "Kuzya",
+    name: "",
     messages: []
 };
 
@@ -17,7 +18,9 @@ const store = createStore(reducer, initialState);
 
 ReactDOM.render(
     <Provider store={store}>
-        <App />
+        <BrowserRouter>
+            <App />
+        </BrowserRouter>
     </Provider>,
     document.getElementById("root"));
 

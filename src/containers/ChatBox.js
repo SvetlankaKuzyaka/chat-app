@@ -4,15 +4,17 @@ import { connect } from "react-redux";
 import PropTypes from 'prop-types';
 // import ReconnectingWebSocket from 'reconnecting-websocket';
 import ReconnectingWebSocket from '../utils/reconnecting-websocket';
+import { Redirect } from 'react-router-dom';
 
 import ChatInput from "../components/ChatInput";
 import ChatMessage from "../components/ChatMessage";
-import { addMessageAction } from '../store/actions';
+import { addMessageAction, loginOutAction, clearMessagesAction } from '../store/actions';
 
-const URL = "ws://st-chat.shas.tel";
+// const URL = "ws://st-chat.shas.tel";
+const URL = "wss://wssproxy.herokuapp.com/";
 
-const ChatBox = ({messages, addMessage}) => {
-  const [name, setName] = useState('Kuzya');
+const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
+  // const [name, setName] = useState('Kuzya');
   // const [ws, setWs] = useState(new WebSocket(URL));
   const [ws] = useState(new ReconnectingWebSocket(URL));
 
@@ -86,17 +88,27 @@ const ChatBox = ({messages, addMessage}) => {
   }
 
   return (
+    // <div>
+    //   <label htmlFor="name">
+    //     Name:&nbsp;
+    //     <input
+    //       type="text"
+    //       id={"name"}
+    //       placeholder={"Enter your name..."}
+    //       value={name}
+    //       onChange={event => setName(event.target.value)}
+    //     />
+    //   </label>
     <div>
-      <label htmlFor="name">
-        Name:&nbsp;
-        <input
-          type="text"
-          id={"name"}
-          placeholder={"Enter your name..."}
-          value={name}
-          onChange={event => setName(event.target.value)}
-        />
-      </label>
+      {!name && <Redirect to="/" />}
+      <button onClick={() => {
+        loginOut();
+        clearMessages();
+        try {
+          ws.close();
+        } catch (error) {
+          console.log("error: ", error);
+        }}}> Sign out </button>
       <ChatInput
         ws={ws}
         onSubmitMessage={messageString => submitMessage(messageString)}
@@ -115,17 +127,18 @@ const ChatBox = ({messages, addMessage}) => {
   );
 }
 
-const mapStateToProps = ({ messages }) => {
+const mapStateToProps = ({ messages, name }) => {
   return {
     messages,
+    name
   }
 }
 
 const mapsDispatchToProps = (dispatch) => {
   return {
-    addMessage: (message) => {
-      dispatch(addMessageAction(message))
-    }
+    addMessage: (message) => {dispatch(addMessageAction(message))},
+    loginOut: () => {dispatch(loginOutAction())},
+    clearMessages: () => {dispatch(clearMessagesAction())}
   }
 }
 
@@ -136,7 +149,10 @@ const Chat  = connect (
 
 ChatBox.propTypes = {
   messages: PropTypes.array.isRequired,
-  addMessage: PropTypes.func.isRequired
+  name: PropTypes.string.isRequired,
+  addMessage: PropTypes.func.isRequired,
+  loginOut: PropTypes.func.isRequired,
+  clearMessages: PropTypes.func.isRequired
 };
 
 export default Chat;
