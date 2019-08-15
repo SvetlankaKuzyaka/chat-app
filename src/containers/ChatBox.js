@@ -71,6 +71,7 @@ const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
     };
     ws.onclose = () => {
       console.log("disconnected");
+      clearMessages();
       // setWs(new WebSocket(URL));
     };
     // return () => {
@@ -80,7 +81,8 @@ const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
     //     console.log("error: ", error);
     //   }
     // };
-  }, [ws, addMessage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ws]);
    
   const submitMessage = (messageString) => {
     const message = { from: name, message: messageString };
