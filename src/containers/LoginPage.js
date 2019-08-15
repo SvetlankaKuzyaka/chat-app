@@ -5,15 +5,16 @@ import { connect } from "react-redux";
 import { setLoginAction } from '../store/actions';
 
 const LoginPage = ({ name, setLogin }) => {
-    const [input, setInput] = useState('');
+    const login = window.localStorage.getItem('login');
+    const [input, setInput] = useState(`${login ? login : ''}`);
     // const login = window.localStorage.getItem('login');
     // if (login) setInput(login);
     const handleChange = (event) => {
         setInput(event.target.value)
-        // window.localStorage.setItem('login', event.target.value);
     }
     const handleClick = () => {
         if (input) setLogin(input);
+        window.localStorage.setItem('login', input);
     }
   
     return (       
