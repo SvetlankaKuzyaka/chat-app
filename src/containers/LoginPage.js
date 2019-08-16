@@ -3,6 +3,11 @@ import { Redirect } from 'react-router-dom';
 import { connect } from "react-redux";
 
 import { setLoginAction } from '../store/actions';
+import store from "../store/store";
+import { connect as connectWebsocket } from '@giantmachines/redux-websocket';
+import addNotification from "../utils/notification";
+
+const URL = "ws://st-chat.shas.tel";
 
 const LoginPage = ({ name, setLogin }) => {
     const login = window.localStorage.getItem('login');
@@ -12,9 +17,19 @@ const LoginPage = ({ name, setLogin }) => {
     const handleChange = (event) => {
         setInput(event.target.value)
     }
+
+    let currentValue = [];
+    function handleStoreChange() {
+      let previousValue = [...currentValue];
+      currentValue = [...store.getState().messages];
+      if (previousValue.length !== currentValue.length) addNotification();
+    }
+
     const handleClick = () => {
         if (input) setLogin(input);
         window.localStorage.setItem('login', input);
+        store.dispatch(connectWebsocket(URL));
+        store.subscribe(handleStoreChange);
     }
   
     return (       

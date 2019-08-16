@@ -1,79 +1,83 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { DateTime } from "luxon";
 import { connect } from "react-redux";
 import PropTypes from 'prop-types';
 // import ReconnectingWebSocket from 'reconnecting-websocket';
-import ReconnectingWebSocket from '../utils/reconnecting-websocket';
+// import ReconnectingWebSocket from '../utils/reconnecting-websocket';
 import { Redirect } from 'react-router-dom';
+import { disconnect, send } from '@giantmachines/redux-websocket';
+import store from "../store/store";
 
 import ChatInput from "../components/ChatInput";
 import ChatMessage from "../components/ChatMessage";
 import { addMessageAction, loginOutAction, clearMessagesAction } from '../store/actions';
 
 // const URL = "ws://st-chat.shas.tel";
-const URL = "wss://wssproxy.herokuapp.com/";
+// const URL = "wss://wssproxy.herokuapp.com/";
 
-const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
+const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
   // const [name, setName] = useState('Kuzya');
   // const [ws, setWs] = useState(new WebSocket(URL));
-  const [ws] = useState(new ReconnectingWebSocket(URL));
+  // const [ws] = useState(new ReconnectingWebSocket(URL));
 
-  useEffect(() => {
-    let isNotice = true;
-    function addNotification() {
-      function clickFunc() {
-        isNotice = true;
-      }
-      if (!("Notification" in window)) {
-        alert("This browser does not support desktop notification");
-      }
-      else if (Notification.permission === "granted") {
-        if (document.hidden) {
-          const notification = new Notification(
-            "Бегом в чат! Есть непрочитанные сообщения!",
-            {
-              body: 'Чат ценителей JS',
-              icon: 'https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png',
-              requireInteraction: true
-            }
-          );
-          isNotice = false;
-          notification.onclose = clickFunc;
-        }
-      }
-      else if (Notification.permission !== 'denied') {
-        Notification.requestPermission(function (permission) {
-          if (permission === "granted") {
-            if (document.hidden) {
-              const notification = new Notification(
-                "Бегом в чат! Есть непрочитанные сообщения!",
-                {
-                  body: `Чат ценителей JS`,
-                  icon: 'https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png',
-                  requireInteraction: true
-                }
-              );
-              isNotice = false;
-              notification.onclose = clickFunc;
-            }
-          }
-        });
-      }
-    }    
+  // useEffect(() => {
+    // let isNotice = true;
+    // function addNotification() {
+    //   function clickFunc() {
+    //     isNotice = true;
+    //   }
+    //   if (!("Notification" in window)) {
+    //     alert("This browser does not support desktop notification");
+    //   }
+    //   else if (Notification.permission === "granted") {
+    //     if (document.hidden) {
+    //       const notification = new Notification(
+    //         "Бегом в чат! Есть непрочитанные сообщения!",
+    //         {
+    //           body: 'Чат ценителей JS',
+    //           icon: 'https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png',
+    //           requireInteraction: true
+    //         }
+    //       );
+    //       isNotice = false;
+    //       notification.onclose = clickFunc;
+    //     }
+    //   }
+    //   else if (Notification.permission !== 'denied') {
+    //     Notification.requestPermission(function (permission) {
+    //       if (permission === "granted") {
+    //         if (document.hidden) {
+    //           const notification = new Notification(
+    //             "Бегом в чат! Есть непрочитанные сообщения!",
+    //             {
+    //               body: `Чат ценителей JS`,
+    //               icon: 'https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png',
+    //               requireInteraction: true
+    //             }
+    //           );
+    //           isNotice = false;
+    //           notification.onclose = clickFunc;
+    //         }
+    //       }
+    //     });
+    //   }
+    // } 
+    
+    // store.dispatch(connectWebsocket(URL));
 
-    ws.onopen = () => {
-      console.log("connected");
-    };
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      addMessage(message);
-      if (isNotice) addNotification();
-    };
-    ws.onclose = () => {
-      console.log("disconnected");
-      clearMessages();
+    // ws.onopen = () => {
+    //   console.log("connected");
+    // };
+    // ws.onmessage = (event) => {
+    //   const message = JSON.parse(event.data);
+    //   addMessage(message);
+    //   if (isNotice) addNotification();
+    // };
+    // ws.onclose = () => {
+    //   console.log("disconnected");
+    //   clearMessages();
       // setWs(new WebSocket(URL));
-    };
+    // };
     // return () => {
     //   try {
     //     ws.close();
@@ -82,11 +86,11 @@ const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
     //   }
     // };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ws]);
+  // }, []);
    
   const submitMessage = (messageString) => {
     const message = { from: name, message: messageString };
-    ws.send(JSON.stringify(message));
+    store.dispatch(send(message));
   }
 
   return (
@@ -106,13 +110,15 @@ const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
       <button onClick={() => {
         loginOut();
         clearMessages();
-        try {
-          ws.close();
-        } catch (error) {
-          console.log("error: ", error);
-        }}}> Sign out </button>
+        store.dispatch(disconnect());
+        // try {
+        //   ws.close();
+        // } catch (error) {
+        //   console.log("error: ", error);
+        // }
+        }}> Sign out </button>
       <ChatInput
-        ws={ws}
+        // ws={ws}
         onSubmitMessage={messageString => submitMessage(messageString)}
       />
       {messages.map(message => (
@@ -129,10 +135,10 @@ const ChatBox = ({messages, name, addMessage, loginOut, clearMessages}) => {
   );
 }
 
-const mapStateToProps = ({ messages, name }) => {
+const mapStateToProps = ({ name, messages }) => {
   return {
-    messages,
-    name
+    name,
+    messages
   }
 }
 
