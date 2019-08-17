@@ -1,9 +1,11 @@
 import { applyMiddleware, createStore } from "redux";
-import reduxWebsocket from '@giantmachines/redux-websocket';
+import thunkMiddleware from "redux-thunk";
+// import reduxWebsocket from '@giantmachines/redux-websocket';
 
 import reducer from "./reducer";
 
-const websocketMiddleware = reduxWebsocket();
-const store = createStore(reducer, applyMiddleware(websocketMiddleware));
+// const websocketMiddleware = reduxWebsocket();
+const middlewares = [thunkMiddleware];
+const store = createStore(reducer, applyMiddleware(...middlewares));
 
 export default store;

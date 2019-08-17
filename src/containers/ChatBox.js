@@ -1,26 +1,43 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { DateTime } from "luxon";
 import { connect } from "react-redux";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 // import ReconnectingWebSocket from 'reconnecting-websocket';
 // import ReconnectingWebSocket from '../utils/reconnecting-websocket';
-import { Redirect } from 'react-router-dom';
-import { disconnect, send } from '@giantmachines/redux-websocket';
+import { Redirect } from "react-router-dom";
+// import { disconnect, send } from '@giantmachines/redux-websocket';
+// import store from "../store/store";
 import store from "../store/store";
 
 import ChatInput from "../components/ChatInput";
 import ChatMessage from "../components/ChatMessage";
-import { addMessageAction, loginOutAction, clearMessagesAction } from '../store/actions';
+import {
+  addMessageAction,
+  loginOutAction,
+  clearMessagesAction,
+  addMessageOfflineAction,
+  clearMessagesOfflineAction
+} from "../store/actions";
 
 // const URL = "ws://st-chat.shas.tel";
 // const URL = "wss://wssproxy.herokuapp.com/";
 
-const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
+const ChatBox = ({
+  name,
+  messages,
+  addMessage,
+  loginOut,
+  clearMessages,
+  socket,
+  addMessageOffline,
+  messagesOffline,
+  clearMessagesOffline
+}) => {
   // const [name, setName] = useState('Kuzya');
   // const [ws, setWs] = useState(new WebSocket(URL));
   // const [ws] = useState(new ReconnectingWebSocket(URL));
 
-  // useEffect(() => {
+  useEffect(() => {
     // let isNotice = true;
     // function addNotification() {
     //   function clickFunc() {
@@ -61,8 +78,8 @@ const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
     //       }
     //     });
     //   }
-    // } 
-    
+    // }
+
     // store.dispatch(connectWebsocket(URL));
 
     // ws.onopen = () => {
@@ -76,7 +93,7 @@ const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
     // ws.onclose = () => {
     //   console.log("disconnected");
     //   clearMessages();
-      // setWs(new WebSocket(URL));
+    // setWs(new WebSocket(URL));
     // };
     // return () => {
     //   try {
@@ -85,13 +102,31 @@ const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
     //     console.log("error: ", error);
     //   }
     // };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-   
-  const submitMessage = (messageString) => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const handleOnline = () => {
+      if (store.getState().socket && store.getState().messagesOffline.length) {
+        store.getState().messagesOffline.forEach(element => {
+          store.getState().socket.send(JSON.stringify(element));
+        });
+        clearMessagesOffline();
+      }
+    };
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const submitMessage = messageString => {
     const message = { from: name, message: messageString };
-    store.dispatch(send(message));
-  }
+    // store.dispatch(send(message));
+    if (window.navigator.onLine) {
+      socket.send(JSON.stringify(message));
+    } else {
+      addMessageOffline(message);
+    }
+  };
 
   return (
     // <div>
@@ -107,16 +142,22 @@ const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
     //   </label>
     <div>
       {!name && <Redirect to="/" />}
-      <button onClick={() => {
-        loginOut();
-        clearMessages();
-        store.dispatch(disconnect());
-        // try {
-        //   ws.close();
-        // } catch (error) {
-        //   console.log("error: ", error);
-        // }
-        }}> Sign out </button>
+      <button
+        onClick={() => {
+          loginOut();
+          // clearMessages();
+          // store.dispatch(disconnect());
+          socket.close();
+          // try {
+          //   ws.close();
+          // } catch (error) {
+          //   console.log("error: ", error);
+          // }
+        }}
+      >
+        {" "}
+        Sign out{" "}
+      </button>
       <ChatInput
         // ws={ws}
         onSubmitMessage={messageString => submitMessage(messageString)}
@@ -133,24 +174,38 @@ const ChatBox = ({ name, messages, addMessage, loginOut, clearMessages}) => {
       ))}
     </div>
   );
-}
+};
 
-const mapStateToProps = ({ name, messages }) => {
+const mapStateToProps = ({ name, messages, socket, messagesOffline }) => {
   return {
     name,
-    messages
-  }
-}
+    messages,
+    socket,
+    messagesOffline
+  };
+};
 
-const mapsDispatchToProps = (dispatch) => {
+const mapsDispatchToProps = dispatch => {
   return {
-    addMessage: (message) => {dispatch(addMessageAction(message))},
-    loginOut: () => {dispatch(loginOutAction())},
-    clearMessages: () => {dispatch(clearMessagesAction())}
-  }
-}
+    addMessage: message => {
+      dispatch(addMessageAction(message));
+    },
+    loginOut: () => {
+      dispatch(loginOutAction());
+    },
+    clearMessages: () => {
+      dispatch(clearMessagesAction());
+    },
+    addMessageOffline: message => {
+      dispatch(addMessageOfflineAction(message));
+    },
+    clearMessagesOffline: () => {
+      dispatch(clearMessagesOfflineAction());
+    }
+  };
+};
 
-const Chat  = connect (
+const Chat = connect(
   mapStateToProps,
   mapsDispatchToProps
 )(ChatBox);
