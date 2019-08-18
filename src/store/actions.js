@@ -37,7 +37,6 @@ export function addWebsocketAction(ws) {
 }
 
 export function connectWebsocket(URL) {
-  console.log("enter");
   return function(dispatch) {
     const ws = new ReconnectingWebSocket(URL);
     ws.onopen = () => {

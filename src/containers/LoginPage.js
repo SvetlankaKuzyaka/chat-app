@@ -1,118 +1,82 @@
 import React, { useState } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import { Typography, TextField } from "@material-ui/core";
+import { makeStyles, withStyles } from "@material-ui/core/styles";
 
-import {
-  setLoginAction,
-  connectWebsocket,
-  clearMessagesOfflineAction
-} from "../store/actions";
-import store from "../store/store";
-// import { connect as connectWebsocket } from "@giantmachines/redux-websocket";
-// import addNotification from "../utils/notification";
+import Header from "../components/Header";
+import { setLoginAction } from "../store/actions";
 
-const URL = "ws://st-chat.shas.tel";
+const useStyles = makeStyles({
+  root: {
+    margin: "20vh auto",
+    width: "20%"
+  },
+  input: {
+    width: "100%"
+  }
+});
 
-const LoginPage = ({
-  name,
-  setLogin,
-  connectWesocket,
-  clearMessagesOffline,
-  messagesOffline,
-  socket
-}) => {
-  const login = window.localStorage.getItem("login");
-  const [input, setInput] = useState(`${login ? login : ""}`);
-  // const login = window.localStorage.getItem('login');
-  // if (login) setInput(login);
-
-  let isNotice = true;
-  function addNotification() {
-    if (!("Notification" in window)) {
-      console.log("This browser does not support desktop notification");
-    } else if (Notification.permission === "granted") {
-      if (document.hidden) {
-        const notification = new Notification(
-          "Бегом в чат! Есть непрочитанные сообщения!",
-          {
-            body: "Чат ценителей JS",
-            icon:
-              "https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png",
-            requireInteraction: true
-          }
-        );
-        isNotice = false;
-        notification.onclose = () => {
-          isNotice = true;
-        };
-      }
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission(function(permission) {
-        if (permission === "granted") {
-          if (document.hidden) {
-            const notification = new Notification(
-              "Бегом в чат! Есть непрочитанные сообщения!",
-              {
-                body: `Чат ценителей JS`,
-                icon:
-                  "https://findicons.com/files/icons/2083/go_green_web/64/live_chat.png",
-                requireInteraction: true
-              }
-            );
-            isNotice = false;
-            notification.onclose = () => {
-              isNotice = true;
-            };
-          }
-        }
-      });
+const ValidationTextField = withStyles({
+  root: {
+    "& input:valid + fieldset": {
+      borderColor: "green",
+      borderWidth: 2
+    },
+    "& input:invalid + fieldset": {
+      borderColor: "red",
+      borderWidth: 2
+    },
+    "& input:valid:focus + fieldset": {
+      borderLeftWidth: 6,
+      padding: "4px !important"
     }
   }
+})(TextField);
+
+const LoginPage = ({ name, setLogin }) => {
+  const styles = useStyles();
+  const login = window.localStorage.getItem("login");
+  const [input, setInput] = useState(`${login ? login : "Kuzya"}`);
 
   const handleChange = event => {
     setInput(event.target.value);
   };
 
-  let currentValue = [];
-  function handleStoreChange() {
-    let previousValue = [...currentValue];
-    currentValue = [...store.getState().messages];
-    if (currentValue.length > previousValue.length && isNotice) {
-      addNotification();
+  const handleSubmit = event => {
+    event.preventDefault();
+    if (input) {
+      setLogin(input);
+      window.localStorage.setItem("login", input);
     }
-  }
-
-  const handleClick = () => {
-    if (input) setLogin(input);
-    window.localStorage.setItem("login", input);
-    // store.dispatch(connectWebsocket(URL));
-    connectWesocket(URL);
-    store.subscribe(handleStoreChange);
   };
 
   return (
-    <div>
+    <>
       {name && <Redirect to="/chat" />}
-      <label htmlFor="name">
-        Name:&nbsp;
-        <input
-          type="text"
-          id={"name"}
-          placeholder={"Enter your name..."}
-          value={input}
-          onChange={handleChange}
-        />
-      </label>
-      <button onClick={handleClick}>Sign in</button>
-    </div>
+      <Header title="Welcome to chat !" />
+      <Typography component="div" className={styles.root}>
+        <form onSubmit={handleSubmit}>
+          <ValidationTextField
+            className={styles.input}
+            label="Name"
+            placeholder="Enter your name..."
+            required
+            value={input}
+            variant="outlined"
+            onChange={handleChange}
+            id="validation-outlined-input"
+          />
+        </form>
+      </Typography>
+    </>
   );
 };
 
-const mapStateToProps = ({ name, messagesOffline, socket }) => {
+const mapStateToProps = ({ name }) => {
   return {
-    name,
-    messagesOffline,
-    socket
+    name
   };
 };
 
@@ -120,12 +84,6 @@ const mapsDispatchToProps = dispatch => {
   return {
     setLogin: name => {
       dispatch(setLoginAction(name));
-    },
-    connectWesocket: URL => {
-      dispatch(connectWebsocket(URL));
-    },
-    clearMessagesOffline: () => {
-      dispatch(clearMessagesOfflineAction());
     }
   };
 };
@@ -134,5 +92,10 @@ const Login = connect(
   mapStateToProps,
   mapsDispatchToProps
 )(LoginPage);
+
+LoginPage.propTypes = {
+  name: PropTypes.string.isRequired,
+  setLogin: PropTypes.func.isRequired
+};
 
 export default Login;

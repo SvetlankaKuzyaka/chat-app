@@ -52,27 +52,6 @@ export default function reducer(state = initialState, action) {
         ...state,
         socket: action.ws
       };
-    // case "REDUX_WEBSOCKET::MESSAGE":
-    //   return {
-    //     ...state,
-    //     messages: [...JSON.parse(action.payload.message), ...state.messages]
-    //   };
-    // case "REDUX_WEBSOCKET::OPEN": {
-    //   console.log("open");
-    //   return { ...state };
-    // }
-    // case "REDUX_WEBSOCKET::CLOSED": {
-    //   console.log("closed");
-    //   return { ...state };
-    // }
-    // case "REDUX_WEBSOCKET::BEGIN_RECONNECT": {
-    //   console.log("begin_reconnect");
-    //   return { ...state };
-    // }
-    // case "REDUX_WEBSOCKET::RECONNECTED": {
-    //   console.log("reconnected");
-    //   return { ...state, messages: [] };
-    // }
     default:
       return { ...state };
   }
