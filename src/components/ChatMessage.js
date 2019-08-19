@@ -18,6 +18,11 @@ const useStyles = makeStyles({
   },
   inline: {
     display: "inline"
+  },
+  listitem: {
+    "&:hover": {
+      backgroundColor: "#EEEEEE"
+    }
   }
 });
 
@@ -26,7 +31,7 @@ const ChatMessage = ({ name, message, time }) => {
 
   return (
     <>
-      <ListItem alignItems="flex-start">
+      <ListItem className={styles.listitem} alignItems="flex-start">
         <ListItemAvatar>
           <Avatar className={styles.avatar}>{name.substring(0, 2)}</Avatar>
         </ListItemAvatar>

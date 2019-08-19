@@ -20,7 +20,7 @@ import {
 const useStyles = makeStyles({
   root: {
     margin: "0 auto",
-    width: "50%"
+    width: "30%"
   }
 });
 
@@ -36,7 +36,7 @@ const ChatBox = ({
   connectWesocket
 }) => {
   useEffect(() => {
-    connectWesocket(URL);
+    if (name) connectWesocket(URL);
   }, []);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ const ChatBox = ({
           }
         });
       }
-    }
+    };
     function handleStoreChange() {
       let previousValue = [...currentValue];
       currentValue = [...store.getState().messages];
@@ -82,7 +82,10 @@ const ChatBox = ({
       )
         addNotification();
     }
-    store.subscribe(handleStoreChange);
+    const unsubscribe = store.subscribe(handleStoreChange);
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -113,7 +116,7 @@ const ChatBox = ({
 
   const handleClick = () => {
     loginOut();
-    socket.close();
+    if (socket.readyState === 1 || socket.readyState === 0) socket.close();
   };
 
   return (

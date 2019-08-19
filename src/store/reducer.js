@@ -30,7 +30,7 @@ export default function reducer(state = initialState, action) {
     case ADD_MESSAGEOFFLINE:
       return {
         ...state,
-        messagesOffline: [action.message, ...state.messagesOffline]
+        messagesOffline: [...state.messagesOffline, action.message]
       };
     case CLEAR_MESSAGESOFFLINE:
       return {

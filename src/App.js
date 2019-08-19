@@ -5,7 +5,7 @@ import "./App.css";
 import ChatBox from "./containers/ChatBox";
 import LoginPage from "./containers/LoginPage";
 
-function App({ name }) {
+function App() {
   return (
     <div className="App">
       <Switch>

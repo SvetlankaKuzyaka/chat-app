@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef, useEffect} from "react";
 import PropTypes from "prop-types";
 import { DateTime } from "luxon";
 import { makeStyles } from "@material-ui/core/styles";
@@ -24,7 +24,6 @@ const useStyles = makeStyles({
     width: "100%",
     height: "70vh",
     marginBottom: 20,
-    backgroundColor: "#EEEEEE",
     padding: "1em",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -35,16 +34,27 @@ const useStyles = makeStyles({
   },
   list: {
     width: "100%"
+  },
+  div: {
+    height: "5vh"
   }
 });
 
 const ChatList = ({ messages }) => {
   const styles = useStyles();
 
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollIntoView();
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
   return (
     <Paper className={styles.root}>
       <List className={styles.list}>
-        {messages.map(message => (
+        {[...messages].reverse().map(message => (
           <ChatMessage
             key={message.id}
             message={message.message}
@@ -54,6 +64,7 @@ const ChatList = ({ messages }) => {
             )}
           />
         ))}
+        <div className={styles.div} ref={messagesEndRef} />
       </List>
     </Paper>
   );

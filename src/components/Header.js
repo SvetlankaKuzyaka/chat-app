@@ -8,7 +8,7 @@ import { makeStyles } from "@material-ui/core/styles";
 const useStyles = makeStyles({
   root: {
     flexGrow: 1,
-    marginBottom: 10
+    marginBottom: 20
   },
   appBar: {
     backgroundColor: "#616161",
