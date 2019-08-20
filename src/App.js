@@ -10,9 +10,10 @@ function App() {
   return (
     <div className="App">
       <Helmet
-        titleTemplate="ChatApp - %s"
-        defaultTitle="ChatApp"
-        link={[{"rel": "shortcut icon", "href": "/favicon.ico"}]}
+        title="ChatApp"
+        meta={[
+          {"name": "description", "content": "The chat is a final task of RSS"}
+        ]}
       />
       <Switch>
         <Route exact path="/" component={LoginPage} />

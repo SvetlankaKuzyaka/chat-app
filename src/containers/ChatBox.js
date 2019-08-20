@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
@@ -21,7 +21,18 @@ import {
 const useStyles = makeStyles({
   root: {
     margin: "0 auto",
-    width: "30%"
+    width: "30%",
+    '@media (max-width:520px)': {
+      width: '95%',
+    },
+    '@media (min-width:520px) and (max-width:1024px)': {
+      width: '70%',
+    },
+  },
+  button: {
+    color: "inherit",
+    fontSize: "0.8em",
+    fontWeight: "bold"
   }
 });
 
@@ -36,13 +47,14 @@ const ChatBox = ({
   clearMessagesOffline,
   connectWesocket
 }) => {
+  const [offline, setOffline] = useState(false);
+
   useEffect(() => {
     if (name) connectWesocket(URL);
   }, []);
 
   useEffect(() => {
     let isNotice = true;
-    let currentValue = [];
     const createNotification = () => {
       if (document.hidden) {
         const notification = new Notification(
@@ -73,6 +85,10 @@ const ChatBox = ({
         });
       }
     };
+    const handleVisibilityChange = () => {
+      if (!document.hidden) document.title="ChatApp";
+    };
+    let currentValue = [];
     function handleStoreChange() {
       let previousValue = [...currentValue];
       currentValue = [...store.getState().messages];
@@ -80,17 +96,26 @@ const ChatBox = ({
         isNotice &&
         previousValue.length &&
         currentValue.length > previousValue.length
-      )
-        addNotification();
+      ) addNotification();
+      if (
+        document.hidden &&
+        previousValue.length &&
+        currentValue.length > previousValue.length
+      ) {
+        document.title="ChatApp - 𝐍𝐞𝐰 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬";
+        document.addEventListener("visibilitychange", handleVisibilityChange, false);
+      }
     };
     const unsubscribe = store.subscribe(handleStoreChange);
     return () => {
       unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
   useEffect(() => {
     const handleOnline = () => {
+      setOffline(false);
       if (store.getState().socket && store.getState().messagesOffline.length) {
         store.getState().messagesOffline.forEach(element => {
           store.getState().socket.send(JSON.stringify(element));
@@ -98,9 +123,14 @@ const ChatBox = ({
         clearMessagesOffline();
       }
     };
+    const handleOffline = () => {
+      setOffline(true);
+    }
     window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     return () => {
       window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -123,9 +153,9 @@ const ChatBox = ({
   return (
     <>
       {!name && <Redirect to="/" />}
-      <Helmet title={"Chatting..."}/>
+      {offline && <Helmet title="ChatApp - 𝐨𝐟𝐟𝐥𝐢𝐧𝐞" />}
       <Header title={`Chatting as ${name}`}>
-        <Button color="inherit" onClick={handleClick}>
+        <Button className={styles.button} onClick={handleClick}>
           Log Out
         </Button>
       </Header>

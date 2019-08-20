@@ -12,7 +12,10 @@ const useStyles = makeStyles({
   },
   appBar: {
     backgroundColor: "#616161",
-    color: "#ffffff"
+    color: "#ffffff",
+    '@media (max-width:520px)': {
+      fontSize: "0.8rem"
+    },
   },
   title: {
     color: "#FF5722",

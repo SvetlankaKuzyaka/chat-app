@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from 'react-redux';
 import PropTypes from "prop-types";
 import {
   ListItem,
@@ -13,8 +14,13 @@ import { makeStyles } from "@material-ui/core/styles";
 const useStyles = makeStyles({
   avatar: {
     margin: 10,
-    color: "#fff",
+    color: "#FFF",
     backgroundColor: "#FF5722"
+  },
+  equalavatar: {
+    margin: 10,
+    color: "#FFF",
+    backgroundColor: "#3F51B5"
   },
   inline: {
     display: "inline"
@@ -24,6 +30,7 @@ const useStyles = makeStyles({
 	  wordBreak: "break-all"
   },
   listitem: {
+    alignItems: "flex-start",
     "&:hover": {
       backgroundColor: "#EEEEEE"
     }
@@ -32,12 +39,15 @@ const useStyles = makeStyles({
 
 const ChatMessage = ({ name, message, time }) => {
   const styles = useStyles();
+  const author = useSelector(state => state.name);
 
   return (
     <>
-      <ListItem className={styles.listitem} alignItems="flex-start">
+      <ListItem className={styles.listitem}>
         <ListItemAvatar>
-          <Avatar className={styles.avatar}>{name.substring(0, 2)}</Avatar>
+          <Avatar className={author===name ? styles.equalavatar : styles.avatar}>
+            {name.substring(0, 2)}
+          </Avatar>
         </ListItemAvatar>
         <ListItemText
           className={styles.text}

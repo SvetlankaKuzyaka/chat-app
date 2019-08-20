@@ -11,7 +11,13 @@ import { setLoginAction } from "../store/actions";
 const useStyles = makeStyles({
   root: {
     margin: "20vh auto",
-    width: "20%"
+    width: "20%",
+    '@media (max-width:520px)': {
+      width: '90%',
+    },
+    '@media (min-width:520px) and (max-width:1024px)': {
+      width: '60%',
+    },
   },
   input: {
     width: "100%"

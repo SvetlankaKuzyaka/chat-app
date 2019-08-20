@@ -42,8 +42,10 @@ const ChatInput = ({ onSubmitMessage }) => {
   const handleChange = event => setMessage(event.target.value);
   const handleSubmit = event => {
     event.preventDefault();
-    onSubmitMessage(message);
-    setMessage("");
+    if (message.trim()) {
+      onSubmitMessage(message);
+      setMessage("");
+    }    
   };
   
   const emojiPicker = useRef(null);
