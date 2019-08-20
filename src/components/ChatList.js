@@ -1,8 +1,9 @@
-import React, {useRef, useEffect} from "react";
+import React, {useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { DateTime } from "luxon";
 import { makeStyles } from "@material-ui/core/styles";
 import { List, Paper } from "@material-ui/core";
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import ChatMessage from "./ChatMessage";
 
@@ -37,6 +38,9 @@ const useStyles = makeStyles({
   },
   div: {
     height: "5vh"
+  },
+  loader: {
+    marginTop: "50%"
   }
 });
 
@@ -51,9 +55,16 @@ const ChatList = ({ messages }) => {
 
   useEffect(scrollToBottom, [messages]);
 
+  const loader = (
+    <div className={styles.loader}>
+      <CircularProgress />
+    </div>
+  )
+
   return (
     <Paper className={styles.root}>
       <List className={styles.list}>
+        {!messages.length && loader}
         {[...messages].reverse().map(message => (
           <ChatMessage
             key={message.id}
@@ -63,7 +74,7 @@ const ChatList = ({ messages }) => {
               DateTime.DATETIME_SHORT_WITH_SECONDS
             )}
           />
-        ))}
+        ))}    
         <div className={styles.div} ref={messagesEndRef} />
       </List>
     </Paper>

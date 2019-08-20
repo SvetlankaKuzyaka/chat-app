@@ -19,6 +19,10 @@ const useStyles = makeStyles({
   inline: {
     display: "inline"
   },
+  text: {
+    wordWrap: "break-word",
+	  wordBreak: "break-all"
+  },
   listitem: {
     "&:hover": {
       backgroundColor: "#EEEEEE"
@@ -36,6 +40,7 @@ const ChatMessage = ({ name, message, time }) => {
           <Avatar className={styles.avatar}>{name.substring(0, 2)}</Avatar>
         </ListItemAvatar>
         <ListItemText
+          className={styles.text}
           primary={time}
           secondary={
             <>

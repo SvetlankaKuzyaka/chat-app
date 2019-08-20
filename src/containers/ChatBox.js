@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
 import { Typography, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+import Helmet from "react-helmet";
 
 import store from "../store/store";
 import ChatInput from "../components/ChatInput";
@@ -81,7 +82,7 @@ const ChatBox = ({
         currentValue.length > previousValue.length
       )
         addNotification();
-    }
+    };
     const unsubscribe = store.subscribe(handleStoreChange);
     return () => {
       unsubscribe();
@@ -122,6 +123,7 @@ const ChatBox = ({
   return (
     <>
       {!name && <Redirect to="/" />}
+      <Helmet title={"Chatting..."}/>
       <Header title={`Chatting as ${name}`}>
         <Button color="inherit" onClick={handleClick}>
           Log Out

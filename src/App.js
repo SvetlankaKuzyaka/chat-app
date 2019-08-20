@@ -1,5 +1,6 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
+import Helmet from "react-helmet"
 import "./App.css";
 
 import ChatBox from "./containers/ChatBox";
@@ -8,6 +9,11 @@ import LoginPage from "./containers/LoginPage";
 function App() {
   return (
     <div className="App">
+      <Helmet
+        titleTemplate="ChatApp - %s"
+        defaultTitle="ChatApp"
+        link={[{"rel": "shortcut icon", "href": "/favicon.ico"}]}
+      />
       <Switch>
         <Route exact path="/" component={LoginPage} />
         <Route path="/chat" component={ChatBox} />
