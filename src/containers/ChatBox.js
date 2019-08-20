@@ -22,12 +22,12 @@ const useStyles = makeStyles({
   root: {
     margin: "0 auto",
     width: "30%",
-    '@media (max-width:520px)': {
-      width: '95%',
+    "@media (max-width:520px)": {
+      width: "95%"
     },
-    '@media (min-width:520px) and (max-width:1024px)': {
-      width: '70%',
-    },
+    "@media (min-width:520px) and (max-width:1024px)": {
+      width: "70%"
+    }
   },
   button: {
     color: "inherit",
@@ -55,9 +55,10 @@ const ChatBox = ({
 
   useEffect(() => {
     let isNotice = true;
+    let notification = null;
     const createNotification = () => {
       if (document.hidden) {
-        const notification = new Notification(
+        notification = new Notification(
           "Бегом в чат! Есть непрочитанные сообщения!",
           {
             body: "Чат ценителей JS",
@@ -84,9 +85,12 @@ const ChatBox = ({
           }
         });
       }
-    };
+    }
     const handleVisibilityChange = () => {
-      if (!document.hidden) document.title="ChatApp";
+      if (!document.hidden) {
+        document.title = "ChatApp";
+        if (notification) notification.close();
+      }
     };
     let currentValue = [];
     function handleStoreChange() {
@@ -96,16 +100,21 @@ const ChatBox = ({
         isNotice &&
         previousValue.length &&
         currentValue.length > previousValue.length
-      ) addNotification();
+      )
+        addNotification();
       if (
         document.hidden &&
         previousValue.length &&
         currentValue.length > previousValue.length
       ) {
-        document.title="ChatApp - 𝐍𝐞𝐰 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬";
-        document.addEventListener("visibilitychange", handleVisibilityChange, false);
+        document.title = "ChatApp - 𝐍𝐞𝐰 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬";
+        document.addEventListener(
+          "visibilitychange",
+          handleVisibilityChange,
+          false
+        );
       }
-    };
+    }
     const unsubscribe = store.subscribe(handleStoreChange);
     return () => {
       unsubscribe();
@@ -125,7 +134,7 @@ const ChatBox = ({
     };
     const handleOffline = () => {
       setOffline(true);
-    }
+    };
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     return () => {

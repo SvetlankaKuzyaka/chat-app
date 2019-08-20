@@ -4,8 +4,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Paper, InputBase, IconButton, Divider, Box } from "@material-ui/core";
 import SentimentSatisfiedAltIcon from "@material-ui/icons/SentimentSatisfiedAlt";
 import SendIcon from "@material-ui/icons/Send";
-import 'emoji-mart/css/emoji-mart.css';
-import { Picker } from 'emoji-mart';
+import "emoji-mart/css/emoji-mart.css";
+import { Picker } from "emoji-mart";
 
 const useStyles = makeStyles({
   root: {
@@ -31,8 +31,8 @@ const useStyles = makeStyles({
   picker: {
     position: "absolute",
     bottom: "25%",
-    right: "35%",
-  } 
+    right: "35%"
+  }
 });
 
 const ChatInput = ({ onSubmitMessage }) => {
@@ -45,26 +45,33 @@ const ChatInput = ({ onSubmitMessage }) => {
     if (message.trim()) {
       onSubmitMessage(message);
       setMessage("");
-    }    
+    }
   };
-  
+
   const emojiPicker = useRef(null);
+  const showIcon = useRef(null);
 
-  const handleEmojiClick = (e) => {
+  const handleEmojiClick = e => {
     let emoji = e.native;
-    setMessage(message+emoji);
+    setMessage(message + emoji);
   };
 
-  const closeEmojis = (event) => {
-    if (emojiPicker !== null && !emojiPicker.current.contains(event.target)) {
+  const closeEmojis = event => {
+    if (
+      emojiPicker !== null &&
+      !emojiPicker.current.contains(event.target) &&
+      !showIcon.current.contains(event.target)
+    ) {
       setShow(false);
       document.removeEventListener("click", closeEmojis);
     }
-  }
+  };
 
   const showEmojis = () => {
-    show ? setShow(false) : setShow(true);
-    document.addEventListener("click", closeEmojis)
+    if (!show) {
+      setShow(true);
+      document.addEventListener("click", closeEmojis);
+    }
   };
 
   return (
@@ -78,14 +85,17 @@ const ChatInput = ({ onSubmitMessage }) => {
           onChange={handleChange}
           inputProps={{ "aria-label": "message" }}
         />
-        {show &&
-          <Box className={styles.picker} ref={emojiPicker} >
+        {show && (
+          <Box className={styles.picker} ref={emojiPicker}>
             <Picker onSelect={handleEmojiClick} />
-          </Box>}
+          </Box>
+        )}
         <IconButton
           className={styles.iconButton}
           aria-label="emoji"
-          onClick={showEmojis} >
+          onClick={showEmojis}
+          ref={showIcon}
+        >
           <SentimentSatisfiedAltIcon />
         </IconButton>
         <Divider className={styles.divider} />
