@@ -26,7 +26,6 @@ export default function reducer(state = initialState, action) {
         incoming_array = [...valid_array];
       }
       const final_array = [...incoming_array, ...state.messages].slice(0, 1000);
-      console.log(final_array.length);
       return {
         ...state,
         messages: [...final_array]
