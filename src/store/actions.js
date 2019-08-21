@@ -48,7 +48,6 @@ export function connectWebsocket(URL) {
     };
     ws.onclose = () => {
       console.log("disconnected");
-      dispatch(clearMessagesAction());
     };
     dispatch(addWebsocketAction(ws));
   };

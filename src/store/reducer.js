@@ -17,11 +17,21 @@ const initialState = {
 
 export default function reducer(state = initialState, action) {
   switch (action.type) {
-    case ADD_MESSAGE:
+    case ADD_MESSAGE: {
+      let incoming_array = [...action.message];
+      if (state.messages.length) {
+        const valid_array = incoming_array.filter(item => {
+          return !state.messages.some(element => element.id === item.id);
+        });
+        incoming_array = [...valid_array];
+      }
+      const final_array = [...incoming_array, ...state.messages].slice(0, 1000);
+      console.log(final_array.length);
       return {
         ...state,
-        messages: [...action.message, ...state.messages]
+        messages: [...final_array]
       };
+    }
     case CLEAR_MESSAGES:
       return {
         ...state,

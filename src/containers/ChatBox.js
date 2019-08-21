@@ -15,7 +15,8 @@ import {
   loginOutAction,
   addMessageOfflineAction,
   clearMessagesOfflineAction,
-  connectWebsocket
+  connectWebsocket,
+  clearMessagesAction
 } from "../store/actions";
 
 const useStyles = makeStyles({
@@ -36,7 +37,7 @@ const useStyles = makeStyles({
   }
 });
 
-const URL = "ws://st-chat.shas.tel";
+const URL = "wss://wssproxy.herokuapp.com/";
 
 const ChatBox = ({
   name,
@@ -45,7 +46,8 @@ const ChatBox = ({
   loginOut,
   addMessageOffline,
   clearMessagesOffline,
-  connectWesocket
+  connectWesocket,
+  clearMessages
 }) => {
   const [offline, setOffline] = useState(false);
 
@@ -156,6 +158,7 @@ const ChatBox = ({
 
   const handleClick = () => {
     loginOut();
+    clearMessages();
     if (socket.readyState === 1 || socket.readyState === 0) socket.close();
   };
 
@@ -199,6 +202,9 @@ const mapsDispatchToProps = dispatch => {
     },
     connectWesocket: URL => {
       dispatch(connectWebsocket(URL));
+    },
+    clearMessages: URL => {
+      dispatch(clearMessagesAction());
     }
   };
 };
@@ -215,7 +221,8 @@ ChatBox.propTypes = {
   loginOut: PropTypes.func.isRequired,
   addMessageOffline: PropTypes.func.isRequired,
   clearMessagesOffline: PropTypes.func.isRequired,
-  connectWesocket: PropTypes.func.isRequired
+  connectWesocket: PropTypes.func.isRequired,
+  clearMessages: PropTypes.func.isRequired
 };
 
 export default Chat;
